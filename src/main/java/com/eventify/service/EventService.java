@@ -29,7 +29,7 @@ public class EventService {
             throw new IllegalArgumentException("Event name cannot be empty");
         }
 
-        if (event.getDate() == null) {
+        if (event.getEventDate() == null) {
             throw new IllegalArgumentException("Event date cannot be null");
         }
     }

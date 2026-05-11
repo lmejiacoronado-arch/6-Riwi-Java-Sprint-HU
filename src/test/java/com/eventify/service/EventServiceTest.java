@@ -26,7 +26,7 @@ class EventServiceTest {
     @Test
     void shouldCreateEventWhenDataIsValid() {
         Event event = new Event(
-                1,
+                1L,
                 "Java Conference",
                 LocalDate.of(2026, 6, 10),
                 "Technology event"
@@ -44,7 +44,7 @@ class EventServiceTest {
     @Test
     void shouldThrowExceptionWhenEventNameIsEmpty() {
         Event event = new Event(
-                1,
+                1L,
                 "",
                 LocalDate.of(2026, 6, 10),
                 "Technology event"
@@ -62,7 +62,7 @@ class EventServiceTest {
     @Test
     void shouldThrowExceptionWhenEventDateIsNull() {
         Event event = new Event(
-                1,
+                1L,
                 "Java Conference",
                 null,
                 "Technology event"
@@ -80,8 +80,8 @@ class EventServiceTest {
     @Test
     void shouldReturnAllEvents() {
         List<Event> events = List.of(
-                new Event(1, "Java Conference", LocalDate.of(2026, 6, 10), "Technology event"),
-                new Event(2, "Music Festival", LocalDate.of(2026, 7, 15), "Music event")
+                new Event(1L, "Java Conference", LocalDate.of(2026, 6, 10), "Technology event"),
+                new Event(2L, "Music Festival", LocalDate.of(2026, 7, 15), "Music event")
         );
 
         when(eventRepository.findAll()).thenReturn(events);

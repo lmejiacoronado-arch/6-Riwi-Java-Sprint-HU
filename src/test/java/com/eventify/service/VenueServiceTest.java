@@ -25,7 +25,7 @@ class VenueServiceTest {
     @Test
     void shouldCreateVenueWhenDataIsValid() {
         Venue venue = new Venue(
-                1,
+                1L,
                 "Main Auditorium",
                 "123 Main Street",
                 500
@@ -43,7 +43,7 @@ class VenueServiceTest {
     @Test
     void shouldThrowExceptionWhenVenueNameIsEmpty() {
         Venue venue = new Venue(
-                1,
+                1L,
                 "",
                 "123 Main Street",
                 500
@@ -61,7 +61,7 @@ class VenueServiceTest {
     @Test
     void shouldThrowExceptionWhenVenueAddressIsEmpty() {
         Venue venue = new Venue(
-                1,
+                1L,
                 "Main Auditorium",
                 "",
                 500
@@ -79,7 +79,7 @@ class VenueServiceTest {
     @Test
     void shouldThrowExceptionWhenVenueCapacityIsInvalid() {
         Venue venue = new Venue(
-                1,
+                1L,
                 "Main Auditorium",
                 "123 Main Street",
                 0
@@ -97,8 +97,8 @@ class VenueServiceTest {
     @Test
     void shouldReturnAllVenues() {
         List<Venue> venues = List.of(
-                new Venue(1, "Main Auditorium", "123 Main Street", 500),
-                new Venue(2, "Convention Center", "456 Business Avenue", 1200)
+                new Venue(1L, "Main Auditorium", "123 Main Street", 500),
+                new Venue(2L, "Convention Center", "456 Business Avenue", 1200)
         );
 
         when(venueRepository.findAll()).thenReturn(venues);

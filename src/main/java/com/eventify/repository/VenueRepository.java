@@ -1,21 +1,13 @@
 package com.eventify.repository;
 
 import com.eventify.model.Venue;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.ArrayList;
+
 import java.util.List;
 
 @Repository
-public class VenueRepository {
-    private final List<Venue> venues = new ArrayList<>();
-
-    public Venue save (Venue venue) {
-        venues.add(venue);
-        return venue;
-    }
-
-    public List<Venue> findAll() {
-        return venues;
-    }
+public interface VenueRepository extends JpaRepository<Venue, Long> {
+    List<Venue>findByNameContaining(String name);
 }
