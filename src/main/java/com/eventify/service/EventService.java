@@ -1,5 +1,6 @@
 package com.eventify.service;
 
+import com.eventify.exception.ResourceNotFoundException;
 import com.eventify.model.Event;
 import com.eventify.repository.EventRepository;
 import org.springframework.stereotype.Service;
@@ -22,6 +23,28 @@ public class EventService {
 
     public List<Event> findAll() {
         return eventRepository.findAll();
+    }
+
+    public Event findById(Long id) {
+        return eventRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Event not found with id: " +id));
+    }
+
+    public Event update(Long id, Event event) {
+        Event existingEvent = findById(id);
+
+        validateEvent(event);
+
+        existingEvent.setName(event.getName());
+        existingEvent.setEventDate(event.getEventDate());
+        existingEvent.setDescription(event.getDescription());
+
+        return eventRepository.save(existingEvent);
+    }
+
+    public void delete (Long id) {
+        Event existingEvent = findById(id);
+        eventRepository.delete(existingEvent);
     }
 
     private void validateEvent(Event event) {

@@ -42,4 +42,34 @@ public class EventController {
         List<Event> events = eventService.findAll();
         return ResponseEntity.ok(events);
     }
+
+    @Operation(
+            summary = "Get event by ID",
+            description = "Returns a single event by its ID"
+    )
+    @GetMapping("/{id}")
+    public ResponseEntity<Event> findById(@PathVariable Long id) {
+        Event event = eventService.findById(id);
+        return ResponseEntity.ok(event);
+    }
+
+    @Operation(
+            summary = "Update event by ID",
+            description = "Updates an existing event if the ID exists"
+    )
+    @PutMapping("/{id}")
+    public ResponseEntity<Event> update(@PathVariable Long id, @RequestBody Event event) {
+        Event updatedEvent = eventService.update(id, event);
+        return ResponseEntity.ok(updatedEvent);
+    }
+
+    @Operation(
+            summary = "Delete event by ID",
+            description = "Deletes an existing event if the ID exists"
+    )
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        eventService.delete(id);
+        return ResponseEntity.noContent().build();
+    }
 }

@@ -42,4 +42,34 @@ public class VenueController {
         List<Venue> venues = venueService.findAll();
         return ResponseEntity.ok(venues);
     }
+
+    @Operation(
+            summary = "Get venue by ID",
+            description = "Returns a single venue by its ID"
+    )
+    @GetMapping("/{id}")
+    public ResponseEntity<Venue> findById(@PathVariable Long id) {
+        Venue venue = venueService.findById(id);
+        return ResponseEntity.ok(venue);
+    }
+
+    @Operation(
+            summary = "Update venue by ID",
+            description = "Updates an existing venue if the ID exists"
+    )
+    @PutMapping("/{id}")
+    public ResponseEntity<Venue> update(@PathVariable Long id, @RequestBody Venue venue) {
+        Venue updatedVenue = venueService.update(id, venue);
+        return ResponseEntity.ok(updatedVenue);
+    }
+
+    @Operation(
+            summary = "Delete venue by ID",
+            description = "Deletes an existing venue if the ID exists"
+    )
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        venueService.delete(id);
+        return ResponseEntity.noContent().build();
+    }
 }
