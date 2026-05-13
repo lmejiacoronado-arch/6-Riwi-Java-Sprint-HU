@@ -3,6 +3,8 @@ package com.eventify.service;
 import com.eventify.exception.ResourceNotFoundException;
 import com.eventify.model.Event;
 import com.eventify.repository.EventRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -21,8 +23,8 @@ public class EventService {
         return eventRepository.save(event);
     }
 
-    public List<Event> findAll() {
-        return eventRepository.findAll();
+    public Page<Event> findAll(Pageable pageable) {
+        return eventRepository.findAll(pageable);
     }
 
     public Event findById(Long id) {
