@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: eventify-postgres
+    restart: always
+    environment:
+      POSTGRES_DB: eventify
+      POSTGRES_USER: eventify
+      POSTGRES_PASSWORD: eventify
+    ports:
+      - "5433:5432"
+    volumes:
+      - eventify_postgres_data:/var/lib/postgresql/data
+
+volumes:
+  eventify_postgres_data:

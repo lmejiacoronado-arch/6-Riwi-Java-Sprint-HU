@@ -1,8 +1,11 @@
 package com.eventify.service;
 
 
+import com.eventify.exception.ResourceNotFoundException;
 import com.eventify.model.Venue;
 import com.eventify.repository.VenueRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -20,8 +23,30 @@ public class VenueService {
         return venueRepository.save(venue);
     }
 
-    public List<Venue> findAll() {
-        return venueRepository.findAll();
+    public Page<Venue> findAll(Pageable pageable) {
+        return venueRepository.findAll(pageable);
+    }
+
+    public Venue findById(Long id) {
+        return venueRepository.findById(id)
+                .orElseThrow(()-> new ResourceNotFoundException("Venue not found with id: " + id));
+    }
+
+    public Venue update (Long id, Venue venue) {
+        Venue existingVenue = findById(id);
+
+        validateVenue(venue);
+
+        existingVenue.setName(venue.getName());
+        existingVenue.setAddress(venue.getAddress());
+        existingVenue.setCapacity(venue.getCapacity());
+
+        return venueRepository.save(existingVenue);
+    }
+
+    public void delete (Long id) {
+        Venue existingVenue = findById(id);
+        venueRepository.delete(existingVenue);
     }
 
     private void validateVenue(Venue venue) {

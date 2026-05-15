@@ -1,17 +1,24 @@
 package com.eventify.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import jakarta.persistence.*;
+import lombok.*;
 
-@Setter
-@Getter
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Entity
+@Table(name = "venues")
 public class Venue {
-    private int id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false, length = 100)
     private String name;
+
+    @Column(nullable = false, length = 150)
     private String address;
+
+    @Column(nullable = false)
     private Integer capacity;
 }
