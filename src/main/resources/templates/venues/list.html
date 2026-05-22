@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Venues - Eventify Admin</title>
+</head>
+<body>
+<h1>Venues Catalog</h1>
+
+<nav>
+    <a href="/admin">Back to Admin Panel</a> |
+    <a href="/admin/venues/new">Create New Venue</a>
+</nav>
+
+<p th:if="${successMessage}" th:text="${successMessage}"></p>
+
+<p th:if="${venues == null or venues.isEmpty()}">
+    Currently there are no registered venues.
+</p>
+
+<table border="1" th:unless="${venues == null or venues.isEmpty()}">
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Address</th>
+        <th>Capacity</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="venue : ${venues}">
+        <td th:text="${venue.id}">1</td>
+        <td th:text="${venue.name}">Main Auditorium</td>
+        <td th:text="${venue.address}">123 Main Street</td>
+        <td th:text="${venue.capacity}">500</td>
+    </tr>
+    </tbody>
+</table>
+</body>
+</html>
