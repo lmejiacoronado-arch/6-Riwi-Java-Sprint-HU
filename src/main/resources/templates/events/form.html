@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Create Event - Eventify Admin</title>
+</head>
+<body>
+<h1>Create New Event</h1>
+
+<nav>
+    <a href="/admin/events">Back to Events</a>
+</nav>
+
+<form th:action="@{/admin/events}" th:object="${event}" method="post">
+    <div>
+        <label for="name">Name</label>
+        <input type="text" id="name" th:field="*{name}" required>
+    </div>
+
+    <div>
+        <label for="eventDate">Date</label>
+        <input type="date" id="eventDate" th:field="*{eventDate}" required>
+    </div>
+
+    <div>
+        <label for="description">Description</label>
+        <textarea id="description" th:field="*{description}"></textarea>
+    </div>
+
+    <button type="submit">Save Event</button>
+</form>
+</body>
+</html>
