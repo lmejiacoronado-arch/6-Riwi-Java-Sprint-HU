@@ -8,17 +8,17 @@
 <h1>Events Catalog</h1>
 
 <nav>
-    <a href="/admin">Back to Admin Panel</a> |
-    <a href="/admin/events/new">Create New Event</a>
+    <a th:href="@{/admin}">Back to Admin Panel</a> |
+    <a th:href="@{/admin/events/new}">Create New Event</a>
 </nav>
 
-<p th:if="${successMessage}" th:text="${successMessage}"></p>
+<p th:if="${successMessage != null}" th:text="${successMessage}"></p>
 
-<p th:if="${events == null or events.isEmpty()}">
+<p th:if="${events == null or #lists.isEmpty(events)}">
     Currently there are no scheduled events.
 </p>
 
-<table border="1" th:unless="${events == null or events.isEmpty()}">
+<table border="1" th:unless="${events == null or #lists.isEmpty(events)}">
     <thead>
     <tr>
         <th>ID</th>
@@ -27,11 +27,12 @@
         <th>Description</th>
     </tr>
     </thead>
+
     <tbody>
     <tr th:each="event : ${events}">
         <td th:text="${event.id}">1</td>
         <td th:text="${event.name}">Java Conference</td>
-        <td th:text="${event.date}">2026-06-10</td>
+        <td th:text="${event.eventDate}">2026-06-10</td>
         <td th:text="${event.description}">Technology event</td>
     </tr>
     </tbody>

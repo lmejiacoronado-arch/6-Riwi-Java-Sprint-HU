@@ -8,17 +8,17 @@
 <h1>Venues Catalog</h1>
 
 <nav>
-    <a href="/admin">Back to Admin Panel</a> |
-    <a href="/admin/venues/new">Create New Venue</a>
+    <a th:href="@{/admin}">Back to Admin Panel</a> |
+    <a th:href="@{/admin/venues/new}">Create New Venue</a>
 </nav>
 
-<p th:if="${successMessage}" th:text="${successMessage}"></p>
+<p th:if="${successMessage != null}" th:text="${successMessage}"></p>
 
-<p th:if="${venues == null or venues.isEmpty()}">
+<p th:if="${venues == null or #lists.isEmpty(venues)}">
     Currently there are no registered venues.
 </p>
 
-<table border="1" th:unless="${venues == null or venues.isEmpty()}">
+<table border="1" th:unless="${venues == null or #lists.isEmpty(venues)}">
     <thead>
     <tr>
         <th>ID</th>
@@ -27,6 +27,7 @@
         <th>Capacity</th>
     </tr>
     </thead>
+
     <tbody>
     <tr th:each="venue : ${venues}">
         <td th:text="${venue.id}">1</td>
