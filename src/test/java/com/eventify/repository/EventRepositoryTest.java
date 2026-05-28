@@ -1,5 +1,6 @@
 package com.eventify.repository;
 
+import com.eventify.dto.EventSummaryDTO;
 import com.eventify.model.Category;
 import com.eventify.model.Event;
 import com.eventify.model.Venue;
@@ -11,7 +12,6 @@ import org.springframework.test.context.ActiveProfiles;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -48,6 +48,7 @@ class EventRepositoryTest {
 
         assertNotNull(savedEvent.getId());
         assertEquals("Java Conference", savedEvent.getName());
+        assertEquals(LocalDate.of(2026, 6, 10), savedEvent.getEventDate());
         assertEquals("Main Auditorium", savedEvent.getVenue().getName());
         assertEquals(1, savedEvent.getCategories().size());
     }
@@ -67,10 +68,11 @@ class EventRepositoryTest {
                 Set.of(category)
         ));
 
-        Optional<Event> result = eventRepository.findById(savedEvent.getId());
+        var result = eventRepository.findById(savedEvent.getId());
 
         assertTrue(result.isPresent());
         assertEquals("Spring Boot Summit", result.get().getName());
+        assertEquals(LocalDate.of(2026, 7, 20), result.get().getEventDate());
     }
 
     @Test
@@ -99,9 +101,35 @@ class EventRepositoryTest {
         Venue venue = venueRepository.save(createVenue());
         Category category = categoryRepository.save(createCategory());
 
-        eventRepository.save(new Event(null, "Java Conference", LocalDate.of(2026, 6, 10), "Technology event", true, venue, Set.of(category)));
-        eventRepository.save(new Event(null, "Music Festival", LocalDate.of(2026, 7, 15), "Music event", true, venue, Set.of(category)));
-        eventRepository.save(new Event(null, "Spring Boot Summit", LocalDate.of(2026, 8, 20), "Backend event", true, venue, Set.of(category)));
+        eventRepository.save(new Event(
+                null,
+                "Java Conference",
+                LocalDate.of(2026, 6, 10),
+                "Technology event",
+                true,
+                venue,
+                Set.of(category)
+        ));
+
+        eventRepository.save(new Event(
+                null,
+                "Music Festival",
+                LocalDate.of(2026, 7, 15),
+                "Music event",
+                true,
+                venue,
+                Set.of(category)
+        ));
+
+        eventRepository.save(new Event(
+                null,
+                "Spring Boot Summit",
+                LocalDate.of(2026, 8, 20),
+                "Backend event",
+                true,
+                venue,
+                Set.of(category)
+        ));
 
         Pageable pageable = PageRequest.of(0, 2);
 
@@ -145,6 +173,60 @@ class EventRepositoryTest {
 
         assertEquals(1, events.size());
         assertEquals("Active Event", events.get(0).getName());
+    }
+
+    @Test
+    void shouldReturnEventSummariesAsSlice() {
+        Venue venue = venueRepository.save(createVenue());
+        Category category = categoryRepository.save(createCategory());
+
+        eventRepository.save(new Event(
+                null,
+                "Java Conference",
+                LocalDate.of(2026, 6, 10),
+                "Technology event",
+                true,
+                venue,
+                Set.of(category)
+        ));
+
+        Pageable pageable = PageRequest.of(0, 10);
+
+        Slice<EventSummaryDTO> result = eventRepository.findEventSummaries(pageable);
+
+        assertFalse(result.getContent().isEmpty());
+        assertEquals("Java Conference", result.getContent().get(0).eventName());
+        assertEquals(LocalDate.of(2026, 6, 10), result.getContent().get(0).eventDate());
+        assertEquals("Main Auditorium", result.getContent().get(0).venueName());
+        assertEquals("Medellin", result.getContent().get(0).city());
+    }
+
+    @Test
+    void shouldReturnEventsWithRelationsUsingEntityGraph() {
+        Venue venue = venueRepository.save(createVenue());
+        Category category = categoryRepository.save(createCategory());
+
+        eventRepository.save(new Event(
+                null,
+                "Java Conference",
+                LocalDate.of(2026, 6, 10),
+                "Technology event",
+                true,
+                venue,
+                Set.of(category)
+        ));
+
+        Pageable pageable = PageRequest.of(0, 10);
+
+        Slice<Event> result = eventRepository.findAllWithRelations(pageable);
+
+        assertFalse(result.getContent().isEmpty());
+
+        Event event = result.getContent().get(0);
+
+        assertNotNull(event.getVenue());
+        assertEquals("Main Auditorium", event.getVenue().getName());
+        assertFalse(event.getCategories().isEmpty());
     }
 
     private Venue createVenue() {

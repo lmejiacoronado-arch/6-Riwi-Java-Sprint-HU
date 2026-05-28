@@ -1,13 +1,13 @@
 package com.eventify.service;
 
+import com.eventify.dto.EventSummaryDTO;
 import com.eventify.exception.ResourceNotFoundException;
 import com.eventify.model.Event;
 import com.eventify.repository.EventRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 public class EventService {
@@ -27,9 +27,17 @@ public class EventService {
         return eventRepository.findAll(pageable);
     }
 
+    public Slice<EventSummaryDTO> findEventSummaries(Pageable pageable) {
+        return eventRepository.findEventSummaries(pageable);
+    }
+
+    public Slice<Event> findAllWithRelations(Pageable pageable) {
+        return eventRepository.findAllWithRelations(pageable);
+    }
+
     public Event findById(Long id) {
         return eventRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Event not found with id: " +id));
+                .orElseThrow(() -> new ResourceNotFoundException("Event not found with id: " + id));
     }
 
     public Event update(Long id, Event event) {
@@ -40,6 +48,8 @@ public class EventService {
         existingEvent.setName(event.getName());
         existingEvent.setEventDate(event.getEventDate());
         existingEvent.setDescription(event.getDescription());
+        existingEvent.setVenue(event.getVenue());
+        existingEvent.setCategories(event.getCategories());
 
         return eventRepository.save(existingEvent);
     }

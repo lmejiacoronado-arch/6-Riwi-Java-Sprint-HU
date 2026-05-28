@@ -65,7 +65,7 @@ class EventViewControllerTest {
 
         mockMvc.perform(post("/admin/events")
                         .param("name", "Spring Boot Summit")
-                        .param("date", "2026-07-20")
+                        .param("eventDate", "2026-07-20")
                         .param("description", "Backend conference")
                         .param("venue.id", "1"))
                 .andExpect(status().is3xxRedirection())

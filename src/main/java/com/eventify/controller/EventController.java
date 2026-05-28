@@ -1,5 +1,6 @@
 package com.eventify.controller;
 
+import com.eventify.dto.EventSummaryDTO;
 import com.eventify.model.Event;
 import com.eventify.service.EventService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -8,8 +9,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springdoc.core.annotations.ParameterObject;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
@@ -29,7 +30,7 @@ public class EventController {
 
     @Operation(
             summary = "Create a new event",
-            description = "Creates a new event after validating the business rules"
+            description = "Creates a new event after validating the business rules. The event must be associated with a venue."
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Event created successfully"),
@@ -42,25 +43,27 @@ public class EventController {
     }
 
     @Operation(
-            summary = "Get paginated events",
-            description = "Returns a paginated and sorted list of events. Example: /api/events?page=0&size=10&sort=name,asc"
+            summary = "Get event summaries",
+            description = "Returns a lightweight Slice of event summaries ordered by event date descending. " +
+                    "This endpoint uses EventSummaryDTO to avoid loading heavy entities and improve performance for large catalogs. " +
+                    "Soft deleted events are automatically excluded."
     )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Events retrieved successfully")
+            @ApiResponse(responseCode = "200", description = "Event summaries retrieved successfully")
     })
     @GetMapping
-    public ResponseEntity<Page<Event>> findAll(
+    public ResponseEntity<Slice<EventSummaryDTO>> findAll(
             @ParameterObject
-            @PageableDefault(size = 10, sort = "name", direction = Sort.Direction.ASC)
+            @PageableDefault(size = 10, sort = "eventDate", direction = Sort.Direction.DESC)
             Pageable pageable
     ) {
-        Page<Event> events = eventService.findAll(pageable);
+        Slice<EventSummaryDTO> events = eventService.findEventSummaries(pageable);
         return ResponseEntity.ok(events);
     }
 
     @Operation(
             summary = "Get event by ID",
-            description = "Returns a single event by its ID"
+            description = "Returns a single active event by its ID. Soft deleted events are automatically excluded."
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Event found successfully"),
@@ -77,7 +80,7 @@ public class EventController {
 
     @Operation(
             summary = "Update event by ID",
-            description = "Updates an existing event if the provided ID exists"
+            description = "Updates an existing active event if the provided ID exists. The event must keep a valid venue relationship."
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Event updated successfully"),
@@ -95,11 +98,12 @@ public class EventController {
     }
 
     @Operation(
-            summary = "Delete event by ID",
-            description = "Deletes an existing event if the provided ID exists"
+            summary = "Soft delete event by ID",
+            description = "Performs a logical deletion by setting the event as inactive. " +
+                    "The record remains in the database but is automatically excluded from normal queries."
     )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "204", description = "Event deleted successfully"),
+            @ApiResponse(responseCode = "204", description = "Event soft deleted successfully"),
             @ApiResponse(responseCode = "404", description = "Event not found")
     })
     @DeleteMapping("/{id}")
