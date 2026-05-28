@@ -4,9 +4,7 @@ import com.eventify.model.Venue;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.*;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.util.List;
@@ -23,12 +21,7 @@ class VenueRepositoryTest {
 
     @Test
     void shouldSaveVenue() {
-        Venue venue = new Venue(
-                null,
-                "Main Auditorium",
-                "123 Main Street",
-                500
-        );
+        Venue venue = createVenue();
 
         Venue savedVenue = venueRepository.save(venue);
 
@@ -36,64 +29,34 @@ class VenueRepositoryTest {
         assertEquals("Main Auditorium", savedVenue.getName());
         assertEquals("123 Main Street", savedVenue.getAddress());
         assertEquals(500, savedVenue.getCapacity());
+        assertEquals("Medellin", savedVenue.getCity());
     }
 
     @Test
     void shouldFindVenueById() {
-        Venue venue = new Venue(
-                null,
-                "Convention Center",
-                "456 Business Avenue",
-                1200
-        );
-
-        Venue savedVenue = venueRepository.save(venue);
+        Venue savedVenue = venueRepository.save(createVenue());
 
         Optional<Venue> result = venueRepository.findById(savedVenue.getId());
 
         assertTrue(result.isPresent());
-        assertEquals("Convention Center", result.get().getName());
+        assertEquals("Main Auditorium", result.get().getName());
     }
 
     @Test
     void shouldFindVenuesByNameContainingIgnoreCase() {
-        Venue venue = new Venue(
-                null,
-                "Convention Center",
-                "456 Business Avenue",
-                1200
-        );
+        venueRepository.save(createVenue());
 
-        venueRepository.save(venue);
-
-        List<Venue> results = venueRepository.findByNameContainingIgnoreCase("convention");
+        List<Venue> results = venueRepository.findByNameContainingIgnoreCase("main");
 
         assertFalse(results.isEmpty());
-        assertEquals("Convention Center", results.get(0).getName());
+        assertEquals("Main Auditorium", results.get(0).getName());
     }
 
     @Test
     void shouldReturnPaginatedVenues() {
-        venueRepository.save(new Venue(
-                null,
-                "Main Auditorium",
-                "123 Main Street",
-                500
-        ));
-
-        venueRepository.save(new Venue(
-                null,
-                "Convention Center",
-                "456 Business Avenue",
-                1200
-        ));
-
-        venueRepository.save(new Venue(
-                null,
-                "Open Air Theater",
-                "789 Park Road",
-                800
-        ));
+        venueRepository.save(new Venue(null, "Main Auditorium", "123 Main Street", 500, "Medellin"));
+        venueRepository.save(new Venue(null, "Convention Center", "456 Business Avenue", 1200, "Bogota"));
+        venueRepository.save(new Venue(null, "Open Air Theater", "789 Park Road", 800, "Cali"));
 
         Pageable pageable = PageRequest.of(0, 2);
 
@@ -107,19 +70,22 @@ class VenueRepositoryTest {
 
     @Test
     void shouldDeleteVenue() {
-        Venue venue = new Venue(
-                null,
-                "Temporary Venue",
-                "999 Test Street",
-                100
-        );
-
-        Venue savedVenue = venueRepository.save(venue);
+        Venue savedVenue = venueRepository.save(createVenue());
 
         venueRepository.deleteById(savedVenue.getId());
 
         Optional<Venue> result = venueRepository.findById(savedVenue.getId());
 
         assertTrue(result.isEmpty());
+    }
+
+    private Venue createVenue() {
+        return new Venue(
+                null,
+                "Main Auditorium",
+                "123 Main Street",
+                500,
+                "Medellin"
+        );
     }
 }

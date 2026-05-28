@@ -1,17 +1,18 @@
 package com.eventify.repository;
 
+import com.eventify.model.Category;
 import com.eventify.model.Event;
+import com.eventify.model.Venue;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.*;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -22,33 +23,49 @@ class EventRepositoryTest {
     @Autowired
     private EventRepository eventRepository;
 
+    @Autowired
+    private VenueRepository venueRepository;
+
+    @Autowired
+    private CategoryRepository categoryRepository;
+
     @Test
-    void shouldSaveEvent() {
+    void shouldSaveEventWithVenueAndCategories() {
+        Venue venue = venueRepository.save(createVenue());
+        Category category = categoryRepository.save(createCategory());
+
         Event event = new Event(
                 null,
                 "Java Conference",
                 LocalDate.of(2026, 6, 10),
-                "Technology event focused on Java and Spring Boot"
+                "Technology event",
+                true,
+                venue,
+                Set.of(category)
         );
 
         Event savedEvent = eventRepository.save(event);
 
         assertNotNull(savedEvent.getId());
         assertEquals("Java Conference", savedEvent.getName());
-        assertEquals(LocalDate.of(2026, 6, 10), savedEvent.getEventDate());
-        assertEquals("Technology event focused on Java and Spring Boot", savedEvent.getDescription());
+        assertEquals("Main Auditorium", savedEvent.getVenue().getName());
+        assertEquals(1, savedEvent.getCategories().size());
     }
 
     @Test
     void shouldFindEventById() {
-        Event event = new Event(
+        Venue venue = venueRepository.save(createVenue());
+        Category category = categoryRepository.save(createCategory());
+
+        Event savedEvent = eventRepository.save(new Event(
                 null,
                 "Spring Boot Summit",
                 LocalDate.of(2026, 7, 20),
-                "Backend conference"
-        );
-
-        Event savedEvent = eventRepository.save(event);
+                "Backend conference",
+                true,
+                venue,
+                Set.of(category)
+        ));
 
         Optional<Event> result = eventRepository.findById(savedEvent.getId());
 
@@ -58,14 +75,18 @@ class EventRepositoryTest {
 
     @Test
     void shouldFindEventsByNameContainingIgnoreCase() {
-        Event event = new Event(
+        Venue venue = venueRepository.save(createVenue());
+        Category category = categoryRepository.save(createCategory());
+
+        eventRepository.save(new Event(
                 null,
                 "Spring Boot Summit",
                 LocalDate.of(2026, 7, 20),
-                "Backend conference"
-        );
-
-        eventRepository.save(event);
+                "Backend conference",
+                true,
+                venue,
+                Set.of(category)
+        ));
 
         List<Event> results = eventRepository.findByNameContainingIgnoreCase("spring");
 
@@ -75,26 +96,12 @@ class EventRepositoryTest {
 
     @Test
     void shouldReturnPaginatedEvents() {
-        eventRepository.save(new Event(
-                null,
-                "Java Conference",
-                LocalDate.of(2026, 6, 10),
-                "Technology event"
-        ));
+        Venue venue = venueRepository.save(createVenue());
+        Category category = categoryRepository.save(createCategory());
 
-        eventRepository.save(new Event(
-                null,
-                "Music Festival",
-                LocalDate.of(2026, 7, 15),
-                "Music event"
-        ));
-
-        eventRepository.save(new Event(
-                null,
-                "Spring Boot Summit",
-                LocalDate.of(2026, 8, 20),
-                "Backend event"
-        ));
+        eventRepository.save(new Event(null, "Java Conference", LocalDate.of(2026, 6, 10), "Technology event", true, venue, Set.of(category)));
+        eventRepository.save(new Event(null, "Music Festival", LocalDate.of(2026, 7, 15), "Music event", true, venue, Set.of(category)));
+        eventRepository.save(new Event(null, "Spring Boot Summit", LocalDate.of(2026, 8, 20), "Backend event", true, venue, Set.of(category)));
 
         Pageable pageable = PageRequest.of(0, 2);
 
@@ -107,20 +114,54 @@ class EventRepositoryTest {
     }
 
     @Test
-    void shouldDeleteEvent() {
-        Event event = new Event(
+    void shouldNotReturnInactiveEventsBecauseOfSqlRestriction() {
+        Venue venue = venueRepository.save(createVenue());
+        Category category = categoryRepository.save(createCategory());
+
+        Event activeEvent = new Event(
                 null,
-                "Temporary Event",
-                LocalDate.of(2026, 9, 5),
-                "Event to be deleted"
+                "Active Event",
+                LocalDate.of(2026, 8, 20),
+                "Visible event",
+                true,
+                venue,
+                Set.of(category)
         );
 
-        Event savedEvent = eventRepository.save(event);
+        Event inactiveEvent = new Event(
+                null,
+                "Inactive Event",
+                LocalDate.of(2026, 9, 20),
+                "Hidden event",
+                false,
+                venue,
+                Set.of(category)
+        );
 
-        eventRepository.deleteById(savedEvent.getId());
+        eventRepository.save(activeEvent);
+        eventRepository.save(inactiveEvent);
 
-        Optional<Event> result = eventRepository.findById(savedEvent.getId());
+        List<Event> events = eventRepository.findAll();
 
-        assertTrue(result.isEmpty());
+        assertEquals(1, events.size());
+        assertEquals("Active Event", events.get(0).getName());
+    }
+
+    private Venue createVenue() {
+        return new Venue(
+                null,
+                "Main Auditorium",
+                "123 Main Street",
+                500,
+                "Medellin"
+        );
+    }
+
+    private Category createCategory() {
+        return new Category(
+                null,
+                "Conferences",
+                "Technology conferences"
+        );
     }
 }

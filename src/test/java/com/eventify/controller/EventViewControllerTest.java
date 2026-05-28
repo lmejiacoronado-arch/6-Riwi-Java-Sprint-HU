@@ -1,6 +1,8 @@
 package com.eventify.controller;
 
+import com.eventify.model.Category;
 import com.eventify.model.Event;
+import com.eventify.model.Venue;
 import com.eventify.service.EventService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +15,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
@@ -32,14 +35,7 @@ class EventViewControllerTest {
 
     @Test
     void shouldReturnEventsListView() throws Exception {
-        List<Event> events = List.of(
-                new Event(
-                        1L,
-                        "Java Conference",
-                        LocalDate.of(2026, 6, 10),
-                        "Technology event"
-                )
-        );
+        List<Event> events = List.of(createEvent());
 
         Page<Event> eventPage = new PageImpl<>(
                 events,
@@ -65,23 +61,29 @@ class EventViewControllerTest {
 
     @Test
     void shouldCreateEventAndRedirectToEventsList() throws Exception {
-        Event event = new Event(
-                1L,
-                "Spring Boot Summit",
-                LocalDate.of(2026, 7, 20),
-                "Backend conference"
-        );
-
-        when(eventService.create(any(Event.class))).thenReturn(event);
+        when(eventService.create(any(Event.class))).thenReturn(createEvent());
 
         mockMvc.perform(post("/admin/events")
                         .param("name", "Spring Boot Summit")
                         .param("date", "2026-07-20")
-                        .param("description", "Backend conference"))
+                        .param("description", "Backend conference")
+                        .param("venue.id", "1"))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/admin/events"))
                 .andExpect(flash().attributeExists("successMessage"));
 
         verify(eventService).create(any(Event.class));
+    }
+
+    private Event createEvent() {
+        return new Event(
+                1L,
+                "Java Conference",
+                LocalDate.of(2026, 6, 10),
+                "Technology event",
+                true,
+                new Venue(1L, "Main Auditorium", "123 Main Street", 500, "Medellin"),
+                Set.of(new Category(1L, "Conferences", "Technology conferences"))
+        );
     }
 }

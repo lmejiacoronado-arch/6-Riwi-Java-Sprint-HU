@@ -40,7 +40,7 @@ public class VenueService {
         existingVenue.setName(venue.getName());
         existingVenue.setAddress(venue.getAddress());
         existingVenue.setCapacity(venue.getCapacity());
-
+        existingVenue.setCity(venue.getCity());
         return venueRepository.save(existingVenue);
     }
 
@@ -60,6 +60,10 @@ public class VenueService {
 
         if (venue.getCapacity() == null || venue.getCapacity() <= 0) {
             throw new IllegalArgumentException("Venue capacity must be greater than zero");
+        }
+
+        if (venue.getCity() == null || venue.getCity().isBlank()) {
+            throw new IllegalArgumentException("Venue city cannot be empty");
         }
     }
 }

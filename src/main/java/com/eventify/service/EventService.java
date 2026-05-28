@@ -44,9 +44,10 @@ public class EventService {
         return eventRepository.save(existingEvent);
     }
 
-    public void delete (Long id) {
+    public void delete(Long id) {
         Event existingEvent = findById(id);
-        eventRepository.delete(existingEvent);
+        existingEvent.softDelete();
+        eventRepository.save(existingEvent);
     }
 
     private void validateEvent(Event event) {
@@ -56,6 +57,10 @@ public class EventService {
 
         if (event.getEventDate() == null) {
             throw new IllegalArgumentException("Event date cannot be null");
+        }
+
+        if (event.getVenue() == null || event.getVenue().getId() == null) {
+            throw new IllegalArgumentException("Event venue is required");
         }
     }
 }
