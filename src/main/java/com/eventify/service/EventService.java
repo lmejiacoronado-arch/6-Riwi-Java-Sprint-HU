@@ -97,6 +97,10 @@ public class EventService {
         if (event.getVenue() == null || event.getVenue().getId() == null) {
             throw new IllegalArgumentException("Event venue is required");
         }
+
+        if (event.getCategories() == null || event.getCategories().isEmpty()) {
+            throw new IllegalArgumentException("Event must have at least one category");
+        }
     }
 
     private void validateDateRange(LocalDate startDate, LocalDate endDate) {
