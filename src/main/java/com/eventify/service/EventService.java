@@ -9,6 +9,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+
 @Service
 public class EventService {
 
@@ -29,6 +31,29 @@ public class EventService {
 
     public Slice<EventSummaryDTO> findEventSummaries(Pageable pageable) {
         return eventRepository.findEventSummaries(pageable);
+    }
+
+    public Slice<EventSummaryDTO> searchEventSummaries(
+            String city,
+            String category,
+            Integer minCapacity,
+            LocalDate startDate,
+            LocalDate endDate,
+            Pageable pageable
+    ) {
+        validateDateRange(startDate, endDate);
+
+        String cityPattern = toLikePattern(city);
+        String categoryPattern = toLikePattern(category);
+
+        return eventRepository.searchEventSummaries(
+                cityPattern,
+                categoryPattern,
+                minCapacity,
+                startDate,
+                endDate,
+                pageable
+        );
     }
 
     public Slice<Event> findAllWithRelations(Pageable pageable) {
@@ -72,5 +97,19 @@ public class EventService {
         if (event.getVenue() == null || event.getVenue().getId() == null) {
             throw new IllegalArgumentException("Event venue is required");
         }
+    }
+
+    private void validateDateRange(LocalDate startDate, LocalDate endDate) {
+        if (startDate != null && endDate != null && startDate.isAfter(endDate)) {
+            throw new IllegalArgumentException("Start date cannot be after end date");
+        }
+    }
+
+    private String toLikePattern(String value) {
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+
+        return "%" + value.trim().toLowerCase() + "%";
     }
 }
