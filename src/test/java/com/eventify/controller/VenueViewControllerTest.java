@@ -31,14 +31,7 @@ class VenueViewControllerTest {
 
     @Test
     void shouldReturnVenuesListView() throws Exception {
-        List<Venue> venues = List.of(
-                new Venue(
-                        1L,
-                        "Main Auditorium",
-                        "123 Main Street",
-                        500
-                )
-        );
+        List<Venue> venues = List.of(createVenue());
 
         Page<Venue> venuePage = new PageImpl<>(
                 venues,
@@ -64,23 +57,27 @@ class VenueViewControllerTest {
 
     @Test
     void shouldCreateVenueAndRedirectToVenuesList() throws Exception {
-        Venue venue = new Venue(
-                1L,
-                "Convention Center",
-                "456 Business Avenue",
-                1200
-        );
-
-        when(venueService.create(any(Venue.class))).thenReturn(venue);
+        when(venueService.create(any(Venue.class))).thenReturn(createVenue());
 
         mockMvc.perform(post("/admin/venues")
                         .param("name", "Convention Center")
                         .param("address", "456 Business Avenue")
-                        .param("capacity", "1200"))
+                        .param("capacity", "1200")
+                        .param("city", "Bogota"))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/admin/venues"))
                 .andExpect(flash().attributeExists("successMessage"));
 
         verify(venueService).create(any(Venue.class));
+    }
+
+    private Venue createVenue() {
+        return new Venue(
+                1L,
+                "Main Auditorium",
+                "123 Main Street",
+                500,
+                "Medellin"
+        );
     }
 }

@@ -12,10 +12,68 @@
     <a th:href="@{/admin/events/new}">Create New Event</a>
 </nav>
 
-<p th:if="${successMessage != null}" th:text="${successMessage}"></p>
+<p th:if="${successMessage != null}" th:text="${successMessage}" style="color: green;"></p>
+
+<h2>Search Filters</h2>
+
+<form method="get" th:action="@{/admin/events}">
+    <div>
+        <label for="city">City</label>
+        <input
+                type="text"
+                id="city"
+                name="city"
+                th:value="${city}"
+                placeholder="Example: bog">
+    </div>
+
+    <div>
+        <label for="category">Category</label>
+        <input
+                type="text"
+                id="category"
+                name="category"
+                th:value="${category}"
+                placeholder="Example: rock">
+    </div>
+
+    <div>
+        <label for="minCapacity">Minimum Capacity</label>
+        <input
+                type="number"
+                id="minCapacity"
+                name="minCapacity"
+                th:value="${minCapacity}"
+                min="1"
+                placeholder="Example: 200">
+    </div>
+
+    <div>
+        <label for="startDate">Start Date</label>
+        <input
+                type="date"
+                id="startDate"
+                name="startDate"
+                th:value="${startDate}">
+    </div>
+
+    <div>
+        <label for="endDate">End Date</label>
+        <input
+                type="date"
+                id="endDate"
+                name="endDate"
+                th:value="${endDate}">
+    </div>
+
+    <input type="hidden" name="size" th:value="${size}">
+
+    <button type="submit">Search</button>
+    <a th:href="@{/admin/events}">Clear Filters</a>
+</form>
 
 <p th:if="${events == null or #lists.isEmpty(events)}">
-    Currently there are no scheduled events.
+    Currently there are no scheduled events for the selected filters.
 </p>
 
 <table border="1" th:unless="${events == null or #lists.isEmpty(events)}">
@@ -24,18 +82,61 @@
         <th>ID</th>
         <th>Name</th>
         <th>Date</th>
-        <th>Description</th>
+        <th>Venue</th>
+        <th>City</th>
     </tr>
     </thead>
 
     <tbody>
     <tr th:each="event : ${events}">
         <td th:text="${event.id}">1</td>
-        <td th:text="${event.name}">Java Conference</td>
+        <td th:text="${event.eventName}">Java Conference</td>
         <td th:text="${event.eventDate}">2026-06-10</td>
-        <td th:text="${event.description}">Technology event</td>
+        <td th:text="${event.venueName}">Main Auditorium</td>
+        <td th:text="${event.city}">Bogotá</td>
     </tr>
     </tbody>
 </table>
+
+<div>
+    <p>
+        Page:
+        <span th:text="${currentPage + 1}">1</span>
+    </p>
+
+    <span th:if="${!hasPrevious}">
+        <button disabled>Previous</button>
+    </span>
+
+    <a th:if="${hasPrevious}"
+       th:href="@{/admin/events(
+            page=${previousPage},
+            size=${size},
+            city=${city},
+            category=${category},
+            minCapacity=${minCapacity},
+            startDate=${startDate},
+            endDate=${endDate}
+       )}">
+        Previous
+    </a>
+
+    <span th:if="${!hasNext}">
+        <button disabled>Next</button>
+    </span>
+
+    <a th:if="${hasNext}"
+       th:href="@{/admin/events(
+            page=${nextPage},
+            size=${size},
+            city=${city},
+            category=${category},
+            minCapacity=${minCapacity},
+            startDate=${startDate},
+            endDate=${endDate}
+       )}">
+        Next
+    </a>
+</div>
 </body>
 </html>

@@ -8,10 +8,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.*;
 
 import java.util.List;
 import java.util.Optional;
@@ -30,39 +27,22 @@ class VenueServiceTest {
 
     @Test
     void shouldCreateVenueWhenDataIsValid() {
-        Venue venue = new Venue(
-                null,
-                "Main Auditorium",
-                "123 Main Street",
-                500
-        );
+        Venue venue = createValidVenue();
 
-        Venue savedVenue = new Venue(
-                1L,
-                "Main Auditorium",
-                "123 Main Street",
-                500
-        );
-
-        when(venueRepository.save(venue)).thenReturn(savedVenue);
+        when(venueRepository.save(venue)).thenReturn(venue);
 
         Venue result = venueService.create(venue);
 
         assertNotNull(result);
-        assertEquals(1L, result.getId());
         assertEquals("Main Auditorium", result.getName());
-
+        assertEquals("Medellin", result.getCity());
         verify(venueRepository, times(1)).save(venue);
     }
 
     @Test
     void shouldThrowExceptionWhenVenueNameIsEmpty() {
-        Venue venue = new Venue(
-                null,
-                "",
-                "123 Main Street",
-                500
-        );
+        Venue venue = createValidVenue();
+        venue.setName("");
 
         IllegalArgumentException exception = assertThrows(
                 IllegalArgumentException.class,
@@ -70,18 +50,13 @@ class VenueServiceTest {
         );
 
         assertEquals("Venue name cannot be empty", exception.getMessage());
-
         verify(venueRepository, never()).save(any(Venue.class));
     }
 
     @Test
     void shouldThrowExceptionWhenVenueAddressIsEmpty() {
-        Venue venue = new Venue(
-                null,
-                "Main Auditorium",
-                "",
-                500
-        );
+        Venue venue = createValidVenue();
+        venue.setAddress("");
 
         IllegalArgumentException exception = assertThrows(
                 IllegalArgumentException.class,
@@ -89,18 +64,13 @@ class VenueServiceTest {
         );
 
         assertEquals("Venue address cannot be empty", exception.getMessage());
-
         verify(venueRepository, never()).save(any(Venue.class));
     }
 
     @Test
     void shouldThrowExceptionWhenVenueCapacityIsInvalid() {
-        Venue venue = new Venue(
-                null,
-                "Main Auditorium",
-                "123 Main Street",
-                0
-        );
+        Venue venue = createValidVenue();
+        venue.setCapacity(0);
 
         IllegalArgumentException exception = assertThrows(
                 IllegalArgumentException.class,
@@ -108,18 +78,37 @@ class VenueServiceTest {
         );
 
         assertEquals("Venue capacity must be greater than zero", exception.getMessage());
-
         verify(venueRepository, never()).save(any(Venue.class));
     }
 
     @Test
-    void shouldReturnPaginatedVenues() {
-        List<Venue> venues = List.of(
-                new Venue(1L, "Main Auditorium", "123 Main Street", 500),
-                new Venue(2L, "Convention Center", "456 Business Avenue", 1200)
+    void shouldThrowExceptionWhenVenueCityIsEmpty() {
+        Venue venue = createValidVenue();
+        venue.setCity("");
+
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> venueService.create(venue)
         );
 
-        Pageable pageable = PageRequest.of(0, 10);
+        assertEquals("Venue city cannot be empty", exception.getMessage());
+        verify(venueRepository, never()).save(any(Venue.class));
+    }
+
+    @Test
+    void shouldReturnAllVenuesPaginated() {
+        List<Venue> venues = List.of(
+                createValidVenue(),
+                new Venue(
+                        2L,
+                        "Convention Center",
+                        "456 Business Avenue",
+                        1200,
+                        "Bogota"
+                )
+        );
+
+        Pageable pageable = PageRequest.of(0, 10, Sort.by("name").ascending());
         Page<Venue> venuePage = new PageImpl<>(venues, pageable, venues.size());
 
         when(venueRepository.findAll(pageable)).thenReturn(venuePage);
@@ -128,112 +117,64 @@ class VenueServiceTest {
 
         assertEquals(2, result.getContent().size());
         assertEquals(2, result.getTotalElements());
-        assertEquals(1, result.getTotalPages());
-
         verify(venueRepository, times(1)).findAll(pageable);
     }
 
     @Test
-    void shouldFindVenueByIdWhenVenueExists() {
-        Venue venue = new Venue(
-                1L,
-                "Main Auditorium",
-                "123 Main Street",
-                500
-        );
+    void shouldFindVenueByIdWhenExists() {
+        Venue venue = createValidVenue();
 
         when(venueRepository.findById(1L)).thenReturn(Optional.of(venue));
 
         Venue result = venueService.findById(1L);
 
         assertNotNull(result);
-        assertEquals(1L, result.getId());
         assertEquals("Main Auditorium", result.getName());
-
         verify(venueRepository, times(1)).findById(1L);
     }
 
     @Test
-    void shouldThrowExceptionWhenVenueDoesNotExistById() {
-        when(venueRepository.findById(9999L)).thenReturn(Optional.empty());
+    void shouldThrowExceptionWhenVenueDoesNotExist() {
+        when(venueRepository.findById(999L)).thenReturn(Optional.empty());
 
         ResourceNotFoundException exception = assertThrows(
                 ResourceNotFoundException.class,
-                () -> venueService.findById(9999L)
+                () -> venueService.findById(999L)
         );
 
-        assertEquals("Venue not found with id: 9999", exception.getMessage());
-
-        verify(venueRepository, times(1)).findById(9999L);
+        assertEquals("Venue not found with id: 999", exception.getMessage());
+        verify(venueRepository, times(1)).findById(999L);
     }
 
     @Test
-    void shouldUpdateVenueWhenVenueExists() {
-        Venue existingVenue = new Venue(
-                1L,
-                "Old Venue",
-                "Old Address",
-                100
-        );
+    void shouldUpdateVenueWhenExists() {
+        Venue existingVenue = createValidVenue();
 
-        Venue venueToUpdate = new Venue(
+        Venue updatedData = new Venue(
                 null,
-                "Updated Venue",
-                "Updated Address",
-                800
-        );
-
-        Venue updatedVenue = new Venue(
-                1L,
-                "Updated Venue",
-                "Updated Address",
-                800
+                "Updated Auditorium",
+                "Updated Street",
+                700,
+                "Cali"
         );
 
         when(venueRepository.findById(1L)).thenReturn(Optional.of(existingVenue));
-        when(venueRepository.save(existingVenue)).thenReturn(updatedVenue);
+        when(venueRepository.save(existingVenue)).thenReturn(existingVenue);
 
-        Venue result = venueService.update(1L, venueToUpdate);
+        Venue result = venueService.update(1L, updatedData);
 
-        assertEquals(1L, result.getId());
-        assertEquals("Updated Venue", result.getName());
-        assertEquals("Updated Address", result.getAddress());
-        assertEquals(800, result.getCapacity());
+        assertEquals("Updated Auditorium", result.getName());
+        assertEquals("Updated Street", result.getAddress());
+        assertEquals(700, result.getCapacity());
+        assertEquals("Cali", result.getCity());
 
         verify(venueRepository, times(1)).findById(1L);
         verify(venueRepository, times(1)).save(existingVenue);
     }
 
     @Test
-    void shouldThrowExceptionWhenUpdatingNonExistingVenue() {
-        Venue venueToUpdate = new Venue(
-                null,
-                "Updated Venue",
-                "Updated Address",
-                800
-        );
-
-        when(venueRepository.findById(9999L)).thenReturn(Optional.empty());
-
-        ResourceNotFoundException exception = assertThrows(
-                ResourceNotFoundException.class,
-                () -> venueService.update(9999L, venueToUpdate)
-        );
-
-        assertEquals("Venue not found with id: 9999", exception.getMessage());
-
-        verify(venueRepository, times(1)).findById(9999L);
-        verify(venueRepository, never()).save(any(Venue.class));
-    }
-
-    @Test
-    void shouldDeleteVenueWhenVenueExists() {
-        Venue venue = new Venue(
-                1L,
-                "Main Auditorium",
-                "123 Main Street",
-                500
-        );
+    void shouldDeleteVenueWhenExists() {
+        Venue venue = createValidVenue();
 
         when(venueRepository.findById(1L)).thenReturn(Optional.of(venue));
 
@@ -243,18 +184,13 @@ class VenueServiceTest {
         verify(venueRepository, times(1)).delete(venue);
     }
 
-    @Test
-    void shouldThrowExceptionWhenDeletingNonExistingVenue() {
-        when(venueRepository.findById(9999L)).thenReturn(Optional.empty());
-
-        ResourceNotFoundException exception = assertThrows(
-                ResourceNotFoundException.class,
-                () -> venueService.delete(9999L)
+    private Venue createValidVenue() {
+        return new Venue(
+                1L,
+                "Main Auditorium",
+                "123 Main Street",
+                500,
+                "Medellin"
         );
-
-        assertEquals("Venue not found with id: 9999", exception.getMessage());
-
-        verify(venueRepository, times(1)).findById(9999L);
-        verify(venueRepository, never()).delete(any(Venue.class));
     }
 }

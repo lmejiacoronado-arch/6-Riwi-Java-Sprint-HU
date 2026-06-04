@@ -21,4 +21,7 @@ public class Venue {
 
     @Column(nullable = false)
     private Integer capacity;
+
+    @Column(nullable = false, length = 100)
+    private String city;
 }

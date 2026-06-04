@@ -8,8 +8,10 @@
 <h1>Create New Event</h1>
 
 <nav>
-    <a href="/admin/events">Back to Events</a>
+    <a th:href="@{/admin/events}">Back to Events</a>
 </nav>
+
+<p th:if="${errorMessage != null}" th:text="${errorMessage}" style="color: red;"></p>
 
 <form th:action="@{/admin/events}" th:object="${event}" method="post">
     <div>
@@ -26,6 +28,40 @@
         <label for="description">Description</label>
         <textarea id="description" th:field="*{description}"></textarea>
     </div>
+
+    <div>
+        <label for="venueId">Venue</label>
+        <select id="venueId" name="venueId" required>
+            <option value="">Select a venue</option>
+            <option
+                    th:each="venue : ${venues}"
+                    th:value="${venue.id}"
+                    th:text="${venue.name + ' - ' + venue.city + ' - Capacity: ' + venue.capacity}">
+                Venue option
+            </option>
+        </select>
+    </div>
+
+    <fieldset>
+        <legend>Categories</legend>
+
+        <p th:if="${categories == null or #lists.isEmpty(categories)}">
+            No categories available.
+        </p>
+
+        <div th:each="category : ${categories}">
+            <input
+                    type="checkbox"
+                    name="categoryIds"
+                    th:id="${'category-' + category.id}"
+                    th:value="${category.id}">
+            <label
+                    th:for="${'category-' + category.id}"
+                    th:text="${category.name}">
+                Category
+            </label>
+        </div>
+    </fieldset>
 
     <button type="submit">Save Event</button>
 </form>
